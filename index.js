@@ -9,41 +9,37 @@ const crypto = require('crypto');
 const tinify = require('tinify');
 const program = require('commander');
 
+const pjson = require('./package.json');
+
 const kConfigFileName = '.tinypic.json';
 
-const kVersion = '0.0.1';
-
-function toMap(array) {
-  const map = {};
-  if (array) array.forEach((item) => (map[item] = true));
-  return map;
-}
+const kVersion = pjson.version;
 
 function readConfig(dir) {
-  let tinied;
+  let result;
   const filePath = path.join(dir, kConfigFileName);
   try {
     const text = fs.readFileSync(filePath, {
       encoding: 'utf8',
     });
-    const json = text && JSON.parse(text);
-    tinied = json && json.tinied;
+    result = text && JSON.parse(text);
   } catch (err) {
     // do nothing
   }
-  return {
-    file: filePath,
-    tinied: toMap(tinied),
-  };
+  return Object.assign({
+    _file: filePath,
+    tinied: [],
+    version: kVersion,
+  }, result);
 }
 
 function writeConfig(configs) {
   const myConfigs = {
     version: kVersion,
-    tinied: Object.keys(configs.tinied).sort(),
+    tinied: configs.tinied.sort(),
   };
 
-  fs.writeFile(configs.file,
+  fs.writeFile(configs._file,
     JSON.stringify(myConfigs, '\t'),
     err => (err && console.log(`writeConfig: ${err}`)));
 }
@@ -53,17 +49,16 @@ function md5Hash(str) {
 }
 
 function needTinify(data, configs) {
-  return !(configs && configs.tinied[md5Hash(data)]);
+  return (!configs || configs.tinied.indexOf(md5Hash(data)) < 0);
 }
 
 function setTinified(data, configs) {
   if (data && configs) {
     const md5 = md5Hash(data);
-    if (configs.tinied[md5]) {
-      return;
+    if (configs.tinied.indexOf(md5) < 0) {
+      configs.tinied.push(md5);
+      writeConfig(configs);
     }
-    configs.tinied[md5] = true;
-    writeConfig(configs);
   }
 }
 
@@ -84,7 +79,7 @@ function tinyFile(file, configs) {
               if (err3) {
                 console.warn(`writeFile: Fail ${err3}`);
               } else {
-                console.log(`Tiny: ${file}`);
+                console.log(`Tiny: count=${tinify.compressionCount} ${file}`);
               }
             });
           }
