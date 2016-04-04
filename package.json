@@ -1,0 +1,33 @@
+{
+  "name": "tiny-pic",
+  "version": "1.0.0",
+  "description": "Tiny the images in the directory",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yangrui/tiny-pic.git"
+  },
+  "keywords": [
+    "tiny",
+    "image"
+  ],
+  "author": "Yang Rui",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yangrui/tiny-pic/issues"
+  },
+  "homepage": "https://github.com/yangrui/tiny-pic#readme",
+  "dependencies": {
+    "commander": "^2.9.0",
+    "tinify": "^1.3.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^6.0.2",
+    "eslint": "^2.6.0",
+    "eslint-config-airbnb": "^6.2.0",
+    "eslint-plugin-react": "^4.2.3"
+  }
+}
