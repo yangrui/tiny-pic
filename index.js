@@ -1,3 +1,5 @@
+#! /usr/bin/env node
+
 // Copyright (c) 2016 Yang Rui
 
 'use strict';
