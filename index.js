@@ -39,10 +39,11 @@ function writeConfig(configs) {
   const myConfigs = {
     version: kVersion,
     tinied: configs.tinied.sort(),
+    key: program.key || configs.key,
   };
 
   fs.writeFile(configs._file,
-    JSON.stringify(myConfigs, '\t'),
+    JSON.stringify(myConfigs, null, '\t'),
     err => (err && console.log(`writeConfig: ${err}`)));
 }
 
@@ -51,7 +52,7 @@ function md5Hash(str) {
 }
 
 function needTinify(data, configs) {
-  return (!configs || configs.tinied.indexOf(md5Hash(data)) < 0);
+  return !configs || configs.tinied.indexOf(md5Hash(data)) < 0;
 }
 
 function setTinified(data, configs) {
@@ -66,12 +67,15 @@ function setTinified(data, configs) {
 
 function tinyFile(file, configs) {
   const suffix = '.png';
-  if (file && file.length > suffix.length &&
-    suffix === file.slice(-suffix.length)) {
+  const key = program.key || (configs && configs.key);
+  if (!key) {
+    console.warn(`tinyFile: ${file} without key`);
+  } else if (file && file.length > suffix.length && suffix === file.slice(-suffix.length)) {
     fs.readFile(file, (err, sourceData) => {
       if (err) {
         console.warn(`readFile: Fail ${err}`);
       } else if (needTinify(sourceData, configs)) {
+        tinify.key = key;
         tinify.fromBuffer(sourceData).toBuffer((err2, resultData) => {
           if (err2) {
             console.warn(`toBuffer: Fail ${err2}`);
@@ -123,13 +127,8 @@ program.version(kVersion)
   .option('-k, --key [value]', 'Your API key')
   .parse(process.argv);
 
-if (program.key) {
-  tinify.key = program.key;
-  if (program.args && program.args.length > 0) {
-    program.args.forEach((file) => tinyAll(file));
-  } else {
-    tinyDir('.');
-  }
+if (program.args && program.args.length > 0) {
+  program.args.forEach((file) => tinyAll(file));
 } else {
-  program.outputHelp();
+  tinyDir('.');
 }
